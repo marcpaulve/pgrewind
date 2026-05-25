@@ -26,6 +26,16 @@ describe('normalizeQuery', () => {
   it('collapses multiple spaces', () => {
     expect(normalizeQuery('SELECT   *   FROM   t')).toBe('select * from t');
   });
+
+  it('handles empty string', () => {
+    expect(normalizeQuery('')).toBe('');
+  });
+
+  it('replaces multiple literals in one query', () => {
+    expect(normalizeQuery("SELECT * FROM t WHERE a = 1 AND b = 'foo'")).toBe(
+      'select * from t where a = ? and b = ?'
+    );
+  });
 });
 
 describe('deduplicateQueries', () => {
@@ -71,5 +81,20 @@ describe('deduplicateQueries', () => {
   it('sorts by count descending', () => {
     const result = deduplicateQueries([q1, q2, q3]);
     expect(result[0].count).toBeGreaterThanOrEqual(result[result.length - 1].count);
+  });
+
+  it('returns empty array for empty input', () => {
+    const result = deduplicateQueries([]);
+    expect(result).toHaveLength(0);
+  });
+
+  it('handles a single query correctly', () => {
+    const result = deduplicateQueries([q1]);
+    expect(result).toHaveLength(1);
+    expect(result[0].count).toBe(1);
+    expect(result[0].avgDuration).toBe(10);
+    expect(result[0].minDuration).toBe(10);
+    expect(result[0].maxDuration).toBe(10);
+    expect(result[0].firstSeen).toBe(result[0].lastSeen);
   });
 });
