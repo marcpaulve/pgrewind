@@ -37,6 +37,16 @@ describe('filterByTimeRange', () => {
     expect(result).toHaveLength(2);
   });
 
+  it('filters queries within a time range', () => {
+    const result = filterByTimeRange(
+      mockQueries,
+      new Date('2024-01-15T10:30:00Z'),
+      new Date('2024-01-15T11:30:00Z'),
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].user).toBe('bob');
+  });
+
   it('returns all queries when no range specified', () => {
     expect(filterByTimeRange(mockQueries)).toHaveLength(3);
   });
@@ -52,6 +62,12 @@ describe('filterByDuration', () => {
   it('filters by maximum duration', () => {
     const result = filterByDuration(mockQueries, undefined, 100);
     expect(result).toHaveLength(2);
+  });
+
+  it('filters by both min and max duration', () => {
+    const result = filterByDuration(mockQueries, 20, 100);
+    expect(result).toHaveLength(1);
+    expect(result[0].duration).toBe(50);
   });
 });
 
@@ -84,5 +100,10 @@ describe('applyFilters', () => {
     const result = applyFilters(mockQueries, { user: 'alice', minDuration: 20 });
     expect(result).toHaveLength(1);
     expect(result[0].query).toContain('SELECT');
+  });
+
+  it('returns empty array when no queries match', () => {
+    const result = applyFilters(mockQueries, { user: 'nonexistent' });
+    expect(result).toHaveLength(0);
   });
 });
